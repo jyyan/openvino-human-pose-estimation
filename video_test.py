@@ -89,7 +89,7 @@ def draw_poses(img, poses, point_score_threshold, output_transform, skeleton=def
         return img
     stick_width = 4
 
-    print("pose size: ", poses.size)
+    log.info('Poses size: {}'.format(poses.size))
 
     img_limbs = np.copy(img)
     for pose in poses:
@@ -117,7 +117,11 @@ def draw_poses(img, poses, point_score_threshold, output_transform, skeleton=def
     cv2.addWeighted(img, 0.4, img_limbs, 0.6, 0, dst=img)
     return img
 
-
+def print_raw_results(poses, scores):
+    log.info('Poses:')
+    for pose, pose_score in zip(poses, scores):
+        pose_str = ' '.join('({:.2f}, {:.2f}, {:.2f})'.format(p[0], p[1], p[2]) for p in pose)
+        log.info('{} | {:.2f}'.format(pose_str, pose_score))
 
 def main():
     args = build_argparser().parse_args()
@@ -170,9 +174,12 @@ def main():
         results = hpe_pipeline.get_result(next_frame_id_to_show)
         if results:
             # print("next_frame_id_to_show", next_frame_id_to_show)
-            (poses, scroes), frame_meta = results
+            (poses, scores), frame_meta = results
             frame = frame_meta['frame']
             start_time = frame_meta['start_time']
+
+            if len(poses) and args.raw_output_message:
+               print_raw_results(poses, scores)
 
             presenter.drawGraphs(frame)
             frame = draw_poses(frame, poses, 0.1, output_transform)
@@ -180,6 +187,8 @@ def main():
             if video_writer.isOpened() and (OUTPUT_LIMIT <=0 or next_frame_id_to_show <= OUTPUT_LIMIT-1):
                 video_writer.write(frame)
             next_frame_id_to_show +=1
+
+
             if not args.no_show:
                 cv2.imshow('Pose estimation results', frame)
                 key = cv2.waitKey(1)
@@ -213,8 +222,8 @@ def main():
         frame = frame_meta['frame']
         start_time = frame_meta['start_time']
 
-        #if len(poses) and args.raw_output_message:
-        #    print_raw_results(poses, scores)
+        # if len(poses) and args.raw_output_message:
+           # print_raw_results(poses, scores)
 
         presenter.drawGraphs(frame)
         frame = draw_poses(frame, poses, 0.1, output_transform)
