@@ -44,7 +44,10 @@ mixer.init()
 
 #IMG                     = 'img/input.jpg'
 # VIDEO                   = 'video/video1.mp4' # use video
-VIDEO                   = 4  # open camera
+# VIDEO                   = 'video/2022-01-02-145346.webm' # use video
+VIDEO                   = 'video/2022-01-02-standing.webm' # use video: standing test
+# VIDEO                   = 0  # open integrated camera
+# VIDEO                   = 4  # open external camera
 # IR_MODEL                = Path("model/human-pose-estimation-0007.xml")
 # IR_MODEL                = Path("model/human-pose-estimation-0006.xml")
 IR_MODEL                = Path("model/human-pose-estimation-0002.xml")
@@ -56,7 +59,15 @@ run_num_infer_requests  = 0
 args_OUTPUT_RESOLUTION  = None
 OUTPUT_LIMIT            = -1
 
-AUDIO_ASSET_0           = Path("audio/bbc_maasai-tri_nhu0501421.mp3")
+# 站姿
+AUDIO_ASSET_0           = Path("audio/voice_1_standup.mp3")
+
+# 還有一趟加油
+AUDIO_ASSET_1           = Path("audio/voice_2_last_run.mp3")
+# 快結束了
+AUDIO_ASSET_2           = Path("audio/voice_3_endding.mp3")
+# 厲害，完成訓練
+AUDIO_ASSET_2           = Path("audio/voice_4_rest_awhile.mp3")
 
 logging.basicConfig(format='[ %(levelname)s ] %(message)s', level=logging.INFO, stream=sys.stdout)
 log = logging.getLogger()
@@ -71,6 +82,10 @@ colors = (
         (255, 255, 0), (0, 255, 85), (170, 255, 0), (0, 85, 255),
         (0, 255, 170), (0, 0, 255), (0, 255, 255), (85, 0, 255),
         (0, 170, 255))
+
+pose_threshold = 0.09
+humpback_angle_normal_set = 90 # in normal = 90
+humpback_angle_trigger = 45 # 10 ~ 40
 
 def build_argparser():
     parser = ArgumentParser(add_help=False)
@@ -134,11 +149,13 @@ def draw_poses(img, poses, point_score_threshold, output_transform, skeleton=def
         #Draw body angle
         cv2.putText(img,str(angle),(10,120),cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,255),3,cv2.LINE_AA)
         #Show message if body angle not correct
-        if (abs(90 - angle) >= 10):
+        if (abs(humpback_angle_normal_set - angle) >= humpback_angle_trigger):
             cv2.putText(img,'humpback',(10,160),cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,255),3,cv2.LINE_AA)
             # play alert sound effect
-            mixer.music.load(AUDIO_ASSET_0)
-            mixer.music.play()
+            # check the audio was already playing ?
+            if (not mixer.music.get_busy()):
+                mixer.music.load(AUDIO_ASSET_0)
+                mixer.music.play()
 
     cv2.addWeighted(img, 0.4, img_limbs, 0.6, 0, dst=img)
     return img
@@ -184,13 +201,13 @@ def main():
 
     presenter = monitors.Presenter('',55, (round(output_resolution[0]/4), round(output_resolution[1]/8 )))
     video_writer= cv2.VideoWriter()
-    # if not video_writer.open('output.mp4', cv2.VideoWriter_fourcc(*'mp4v') ,30.0,output_resolution):
+    if not video_writer.open('output_standing.mp4', cv2.VideoWriter_fourcc(*'mp4v') ,30.0,output_resolution):
+        raise RuntimeError("Can't open video writer")
     # if not video_writer.open('', cv2.VideoWriter_fourcc(*'MJPG') , cap.fps(),output_resolution):
         # raise RuntimeError("Can't open video writer")
 
-    if args.output and not video_writer.open(args.output, cv2.VideoWriter_fourcc(*'MJPG'), cap.fps(),
-            output_resolution):
-        raise RuntimeError("Can't open video writer")
+    # if args.output and not video_writer.open(args.output, cv2.VideoWriter_fourcc(*'mp4v'), 30.0,
+            # output_resolution):
 
 
     while True:
@@ -208,7 +225,7 @@ def main():
                print_raw_results(poses, scores)
 
             presenter.drawGraphs(frame)
-            frame = draw_poses(frame, poses, 0.1, output_transform)
+            frame = draw_poses(frame, poses, pose_threshold, output_transform)
             metrics.update(start_time, frame)
             if video_writer.isOpened() and (OUTPUT_LIMIT <=0 or next_frame_id_to_show <= OUTPUT_LIMIT-1):
                 video_writer.write(frame)
