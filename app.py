@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """
+ contributor: edwin2619, Link, Luke
+
+ original sourcecode:
  Copyright (C) 2020-2021 Intel Corporation
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,6 +33,7 @@ from openvino.inference_engine import IENetwork, IECore
 sys.path.append(str (Path(__file__).resolve().parents[0]/'common/python'))
 import models
 import monitors
+import math
 from images_capture import open_images_capture
 from pipelines import get_user_config, AsyncPipeline
 from performance_metrics import PerformanceMetrics
@@ -37,12 +41,12 @@ from helpers import resolution
 
 #IMG                     = 'img/input.jpg'
 # VIDEO                   = 'video/video1.mp4' # use video
-VIDEO                   = 0  # open camera
+VIDEO                   = 4  # open camera
 # IR_MODEL                = Path("model/human-pose-estimation-0007.xml")
 # IR_MODEL                = Path("model/human-pose-estimation-0006.xml")
 IR_MODEL                = Path("model/human-pose-estimation-0002.xml")
-# RUN_DEVICE              = 'MULTI:CPU,MYRIAD'
-RUN_DEVICE              = 'CPU'
+RUN_DEVICE              = 'MULTI:CPU,MYRIAD'
+# RUN_DEVICE              = 'CPU'
 RUN_NUM_STREAMS         = ''
 RUN_NUM_THREADS         = None
 run_num_infer_requests  = 0
@@ -114,6 +118,19 @@ def draw_poses(img, poses, point_score_threshold, output_transform, skeleton=def
                     cv2.fillConvexPoly(img_limbs, polygon, colors[j])
                 else:
                     cv2.line(img_limbs, tuple(points[i]), tuple(points[j]), color=colors[j], thickness=stick_width)
+
+
+        #Draw body axis
+        cv2.line(img_limbs, tuple((points[12]+points[11])//2), tuple((points[5]+points[6])//2), color=colors[j], thickness=stick_width)
+        #Calculate body angle
+        vec = ((points[12]+points[11])//2) - ((points[5]+points[6])//2)
+        angle = int(np.arctan2(vec[1], vec[0]) * 180 / np.pi )
+        #Draw body angle
+        cv2.putText(img,str(angle),(10,120),cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,255),3,cv2.LINE_AA)
+        #Show message if body angle not correct
+        if (abs(90 - angle) >= 10):
+            cv2.putText(img,'humpback',(10,160),cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,255),3,cv2.LINE_AA)
+
     cv2.addWeighted(img, 0.4, img_limbs, 0.6, 0, dst=img)
     return img
 
