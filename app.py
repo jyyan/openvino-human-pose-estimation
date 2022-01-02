@@ -38,6 +38,9 @@ from images_capture import open_images_capture
 from pipelines import get_user_config, AsyncPipeline
 from performance_metrics import PerformanceMetrics
 from helpers import resolution
+from pygame import mixer  # Load the popular external library
+
+mixer.init()
 
 #IMG                     = 'img/input.jpg'
 # VIDEO                   = 'video/video1.mp4' # use video
@@ -52,6 +55,9 @@ RUN_NUM_THREADS         = None
 run_num_infer_requests  = 0
 args_OUTPUT_RESOLUTION  = None
 OUTPUT_LIMIT            = -1
+
+AUDIO_ASSET_0           = Path("audio/bbc_maasai-tri_nhu0501421.mp3")
+
 logging.basicConfig(format='[ %(levelname)s ] %(message)s', level=logging.INFO, stream=sys.stdout)
 log = logging.getLogger()
 
@@ -130,6 +136,9 @@ def draw_poses(img, poses, point_score_threshold, output_transform, skeleton=def
         #Show message if body angle not correct
         if (abs(90 - angle) >= 10):
             cv2.putText(img,'humpback',(10,160),cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,255),3,cv2.LINE_AA)
+            # play alert sound effect
+            mixer.music.load(AUDIO_ASSET_0)
+            mixer.music.play()
 
     cv2.addWeighted(img, 0.4, img_limbs, 0.6, 0, dst=img)
     return img
