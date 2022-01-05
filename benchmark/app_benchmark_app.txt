@@ -1,0 +1,60 @@
+[Step 1/11] Parsing and validating input arguments
+[ INFO ] Parsing input parameters
+[ INFO ] Files were added: 1
+[ INFO ]     /home//OpenVino/source_code/img/test1.jpg
+[Step 2/11] Loading Inference Engine
+[ INFO ] InferenceEngine: 
+	IE version ......... 2021.4.2
+	Build ........... 2021.4.2-3974-e2a469a3450-releases/2021/4
+[ INFO ] Device info: 
+	AUTO
+	AutoPlugin version ......... 2021.4.2
+	Build ........... 2021.4.2-3974-e2a469a3450-releases/2021/4
+	CPU
+	MKLDNNPlugin version ......... 2021.4.2
+	Build ........... 2021.4.2-3974-e2a469a3450-releases/2021/4
+	MYRIAD
+	myriadPlugin version ......... 2021.4.2
+	Build ........... 2021.4.2-3974-e2a469a3450-releases/2021/4
+
+[Step 3/11] Setting device configuration
+[ WARNING ] -nstreams default value is determined automatically for CPU device. Although the automatic selection usually provides a reasonable performance, but it still may be non-optimal for some cases, for more information look at README.
+[ WARNING ] -nstreams default value is determined automatically for MYRIAD device. Although the automatic selection usually provides a reasonable performance, but it still may be non-optimal for some cases, for more information look at README.
+[Step 4/11] Reading network files
+[ INFO ] Loading network files
+[ INFO ] Read network took 24.91 ms
+[Step 5/11] Resizing network to match image sizes and given batch
+[ INFO ] Network batch size: 1
+[Step 6/11] Configuring input of the model
+Network inputs:
+    image : U8 / NCHW
+Network outputs:
+    embeddings : FP32 / NCDHW
+    heatmaps : FP32 / NCHW
+    nms_heatmaps : FP32 / NCHW
+[Step 7/11] Loading the model to the device
+[ INFO ] Load network took 337.22 ms
+[Step 8/11] Setting optimal runtime parameters
+[Step 9/11] Creating infer requests and filling input blobs with images
+[ INFO ] Network input 'image' precision U8, dimensions (NCHW): 1 3 288 288 
+[ WARNING ] Some image input files will be duplicated: 4 files are required but only 1 are provided
+[ INFO ] Infer Request 0 filling
+[ INFO ] Prepare image /home/user/OpenVino/source_code/img/test1.jpg
+[ WARNING ] Image is resized from (460, 287) to (288, 288)
+[ INFO ] Infer Request 1 filling
+[ INFO ] Prepare image /home/user/OpenVino/source_code/img/test1.jpg
+[ WARNING ] Image is resized from (460, 287) to (288, 288)
+[ INFO ] Infer Request 2 filling
+[ INFO ] Prepare image /home/user/OpenVino/source_code/img/test1.jpg
+[ WARNING ] Image is resized from (460, 287) to (288, 288)
+[ INFO ] Infer Request 3 filling
+[ INFO ] Prepare image /home/user/OpenVino/source_code/img/test1.jpg
+[ WARNING ] Image is resized from (460, 287) to (288, 288)
+[Step 10/11] Measuring performance (Start inference asynchronously, 4 inference requests using 4 streams for CPU, limits: 60000 ms duration)
+[ INFO ] First inference took 42.02 ms
+
+[Step 11/11] Dumping statistics report
+Count:      1628 iterations
+Duration:   60154.15 ms
+Latency:    153.90 ms
+Throughput: 27.06 FPS
